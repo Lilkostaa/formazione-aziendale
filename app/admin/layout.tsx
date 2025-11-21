@@ -6,7 +6,8 @@ import {
   GraduationCap, 
   FileText, 
   LogOut,
-  ClipboardList
+  ClipboardList,
+  Tags
 } from 'lucide-react'
 import { auth, signOut } from '@/auth'
 
@@ -34,6 +35,7 @@ export default async function AdminLayout({
           <NavItem href="/admin/dashboard" icon={<LayoutDashboard size={20} />} label="Dashboard" />
           <NavItem href="/admin/corsi" icon={<BookOpen size={20} />} label="Corsi" />
           <NavItem href="/admin/dipendenti" icon={<Users size={20} />} label="Dipendenti" />
+          <NavItem href="/admin/categorie" icon={<Tags size={20} />} label="Categorie" />
           <NavItem href="/admin/iscrizioni" icon={<ClipboardList size={20} />} label="Iscrizioni" />
           <NavItem href="/admin/docenti" icon={<GraduationCap size={20} />} label="Docenti" />
           <NavItem href="/admin/report" icon={<FileText size={20} />} label="Report" />
