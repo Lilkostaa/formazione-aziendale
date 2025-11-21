@@ -213,7 +213,7 @@ export default function DipendentiPage() {
 
       {/* MODALE LINK ATTIVAZIONE (Simulazione Email) */}
       {magicLink && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden p-6 text-center animate-fade-in">
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
               <Check className="h-6 w-6 text-green-600" />
