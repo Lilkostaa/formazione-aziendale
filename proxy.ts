@@ -7,7 +7,7 @@ const publicRoutes = ['/login', '/reset-password', '/set-password']
 
 // Route solo admin
 const adminRoutes = [
-  '/admin/dashboard',
+  '/admin/docenti',
   '/admin/corsi',
   '/admin/dipendenti',
   '/admin/iscrizioni',
@@ -45,7 +45,7 @@ export default async function proxy(request: NextRequest) {
   // Se autenticato e su route pubblica → redirect a dashboard appropriata
   if (token && publicRoutes.some(route => pathname === route)) {
     const dashboardUrl = token.ruolo === 'admin' 
-      ? '/admin/dashboard' 
+      ? '/admin/docenti' 
       : '/corsi-disponibili'
     return NextResponse.redirect(new URL(dashboardUrl, request.url))
   }
