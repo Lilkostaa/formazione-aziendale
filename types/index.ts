@@ -18,7 +18,7 @@ export interface Docente {
   email: string;
   titolo_professionale?: string;
   specializzazione?: string;
-  attivo: boolean;
+  attivo: number;
 }
 
 export interface Corso {
