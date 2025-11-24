@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Search, Calendar, User, BookOpen } from 'lucide-react'
+// Componenti UI
+import { Input } from '@/app/components/ui/Input'
+import { Badge } from '@/app/components/Badge'
 
 interface Iscrizione {
   id: number
@@ -35,7 +38,7 @@ export default function IscrizioniPage() {
     fetchIscrizioni()
   }, [])
 
-  // Filtro Ricerca Multiplo (Nome, Cognome o Corso)
+  // Filtro Ricerca Multiplo
   const filtered = iscrizioni.filter(i => 
     i.dipendente_cognome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     i.dipendente_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,6 +48,16 @@ export default function IscrizioniPage() {
   const formatDate = (dateString: string) => {
     if (!dateString) return '-'
     return new Date(dateString).toLocaleDateString('it-IT')
+  }
+
+  // Helper per mappare lo stato al colore del Badge
+  const getBadgeVariant = (stato: string) => {
+    switch (stato) {
+      case 'In corso': return 'blue'
+      case 'Completato': return 'success'
+      case 'Scaduto': return 'danger'
+      default: return 'neutral'
+    }
   }
 
   return (
@@ -59,11 +72,10 @@ export default function IscrizioniPage() {
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-200 bg-gray-50">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input 
-              type="text" 
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10" />
+            <Input 
               placeholder="Cerca per dipendente o corso..." 
-              className="pl-10 w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+              className="pl-10 bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -83,7 +95,7 @@ export default function IscrizioniPage() {
                 <th className="px-6 py-4 text-center">Scadenza</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr><td colSpan={6} className="px-6 py-8 text-center">Caricamento...</td></tr>
               ) : filtered.length === 0 ? (
@@ -121,7 +133,9 @@ export default function IscrizioniPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <StatusBadge status={row.stato} />
+                      <Badge variant={getBadgeVariant(row.stato)}>
+                        {row.stato}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-center text-gray-500">
                       <div className="flex items-center justify-center gap-1">
@@ -138,17 +152,4 @@ export default function IscrizioniPage() {
       </div>
     </div>
   )
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles = {
-    'In corso': 'bg-blue-100 text-blue-700 border-blue-200',
-    'Completato': 'bg-green-100 text-green-700 border-green-200',
-    'Scaduto': 'bg-red-100 text-red-700 border-red-200'
-  }
-
-  // @ts-ignore
-  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || 'bg-gray-100'}`}>
-    {status}
-  </span>
 }

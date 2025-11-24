@@ -2,25 +2,31 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, Search } from 'lucide-react'
-import type { Docente } from '@/types' 
-import { PageHeader } from '../../components/PageHeader'
-import { Button } from '../../components/Button'
-import { Badge } from '../../components/Badge'
-import { Modal } from '../../components/Modal'
+// Componenti UI
+import { Button } from '@/app/components/Button'
+import { Input } from '@/app/components/ui/Input'
+import { Checkbox } from '@/app/components/ui/Checkbox'
+import { Badge } from '@/app/components/Badge'
 
-interface DocenteRow extends Docente {
+interface Docente {
+  id: number
+  nome: string
+  cognome: string
+  email: string
+  titolo_professionale: string
+  specializzazione: string
+  attivo: number // 1 o 0
   n_corsi: number
 }
 
 export default function DocentiPage() {
-  // Stati
-  const [docenti, setDocenti] = useState<DocenteRow[]>([])
+  const [docenti, setDocenti] = useState<Docente[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingDocente, setEditingDocente] = useState<Docente | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Funzione per caricare i dati
+  // Fetch Docenti
   const fetchDocenti = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api-formazione/docenti/read.php`)
@@ -33,7 +39,6 @@ export default function DocentiPage() {
     }
   }
 
-  // Caricamento iniziale
   useEffect(() => {
     fetchDocenti()
   }, [])
@@ -45,7 +50,6 @@ export default function DocentiPage() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api-formazione/docenti/delete.php`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id }),
       })
       
@@ -59,78 +63,45 @@ export default function DocentiPage() {
     }
   }
 
-  // Gestione Salvataggio (Creazione / Modifica)
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.target as HTMLFormElement)
-    const payload = Object.fromEntries(formData)
-    
-    // Gestione checkbox "attivo" e conversione in formato atteso dal PHP (1 o 0)
-    payload.attivo = formData.get('attivo') ? '1' : '0'
-    
-    if (editingDocente) {
-      payload.id = editingDocente.id.toString()
-    }
-
-    const endpoint = editingDocente ? 'update.php' : 'create.php'
-    
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api-formazione/docenti/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      
-      if (!res.ok) throw new Error('Errore durante il salvataggio')
-      
-      fetchDocenti()
-      setIsModalOpen(false)
-    } catch (err) {
-      alert('Errore durante il salvataggio')
-    }
-  }
-
-  // Filtro ricerca locale
+  // Filtro ricerca
   const filteredDocenti = docenti.filter(d => 
     d.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.cognome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.email.toLowerCase().includes(searchTerm.toLowerCase())
+    d.cognome.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   return (
     <div className="space-y-6">
-      
-      {/* HEADER PAGINA */}
-      <PageHeader 
-        title="Docenti" 
-        description="Gestione anagrafica formatori"
-      >
-        <Button 
+      {/* Header Pagina */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Docenti</h1>
+          <p className="text-gray-500">Gestione anagrafica formatori</p>
+        </div>
+        <Button
           onClick={() => { setEditingDocente(null); setIsModalOpen(true) }}
           icon={<Plus size={20} />}
         >
           Nuovo Docente
         </Button>
-      </PageHeader>
+      </div>
 
-      {/* CARD TABELLA */}
+      {/* Barra Ricerca e Tabella */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         
-        {/* BARRA DI RICERCA */}
+        {/* Barra Ricerca */}
         <div className="p-4 border-b border-gray-200 bg-gray-50">
           <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input 
-              type="text" 
-              placeholder="Cerca per nome, cognome o email..." 
-              className="pl-10 w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm py-2"
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10" />
+            <Input 
+              placeholder="Cerca docente..." 
+              className="pl-10 bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        {/* TABELLA DATI */}
+        {/* Tabella */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-600">
             <thead className="bg-white text-gray-900 font-semibold border-b border-gray-200">
@@ -145,7 +116,7 @@ export default function DocentiPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
-                <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Caricamento in corso...</td></tr>
+                <tr><td colSpan={6} className="px-6 py-8 text-center">Caricamento...</td></tr>
               ) : filteredDocenti.length === 0 ? (
                 <tr><td colSpan={6} className="px-6 py-8 text-center text-gray-500">Nessun docente trovato.</td></tr>
               ) : (
@@ -153,31 +124,37 @@ export default function DocentiPage() {
                   <tr key={docente.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900">{docente.nome}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">{docente.cognome}</td>
-                    <td className="px-6 py-4 text-gray-500">{docente.email}</td>
+                    <td className="px-6 py-4">{docente.email}</td>
                     <td className="px-6 py-4 text-center">
-                      <Badge variant="info">{docente.n_corsi}</Badge>
+                      <Badge variant="blue">
+                        {docente.n_corsi}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <Badge variant={docente.attivo == 1 ? 'success' : 'neutral'}>
                         {docente.attivo == 1 ? 'Attivo' : 'Non attivo'}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-right flex justify-end gap-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => { setEditingDocente(docente); setIsModalOpen(true) }}
-                        icon={<Pencil size={16} />}
-                        title="Modifica"
-                      />
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => handleDelete(docente.id)}
-                        icon={<Trash2 size={16} />}
-                        title="Elimina"
-                      />
+                    <td className="px-6 py-4 text-right space-x-2">
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => { setEditingDocente(docente); setIsModalOpen(true) }}
+                          title="Modifica"
+                        >
+                          <Pencil size={18} className="text-gray-500" />
+                        </Button>
+                        <Button 
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(docente.id)}
+                          className="hover:bg-red-50 hover:text-red-600"
+                          title="Elimina"
+                        >
+                          <Trash2 size={18} className="text-gray-500" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -187,86 +164,97 @@ export default function DocentiPage() {
         </div>
       </div>
 
-      {/* MODALE CREAZIONE / MODIFICA */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={editingDocente ? 'Modifica Docente' : 'Nuovo Docente'}
-      >
-        <form onSubmit={handleSave} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nome *</label>
-              <input 
-                name="nome" 
-                defaultValue={editingDocente?.nome} 
-                required 
-                className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm px-3 py-2" 
-              />
+      {/* Modale Form */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden animate-slide-in">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingDocente ? 'Modifica Docente' : 'Nuovo Docente'}
+              </h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">✕</button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cognome *</label>
-              <input 
-                name="cognome" 
-                defaultValue={editingDocente?.cognome} 
-                required 
-                className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm px-3 py-2" 
-              />
-            </div>
-          </div>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              const formData = new FormData(e.target as HTMLFormElement)
+              const payload = Object.fromEntries(formData)
+              payload.attivo = formData.get('attivo') ? '1' : '0'
+              if (editingDocente) payload.id = editingDocente.id.toString()
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-            <input 
-              type="email" 
-              name="email" 
-              defaultValue={editingDocente?.email} 
-              required 
-              className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm px-3 py-2" 
-            />
-          </div>
+              const endpoint = editingDocente ? 'update.php' : 'create.php'
+              
+              try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api-formazione/docenti/${endpoint}`, {
+                  method: 'POST',
+                  body: JSON.stringify(payload),
+                })
+                if (!res.ok) throw new Error('Errore salvataggio')
+                
+                fetchDocenti()
+                setIsModalOpen(false)
+              } catch (err) {
+                alert('Errore durante il salvataggio')
+              }
+            }}>
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input 
+                    label="Nome *" 
+                    name="nome" 
+                    defaultValue={editingDocente?.nome} 
+                    required 
+                  />
+                  <Input 
+                    label="Cognome *" 
+                    name="cognome" 
+                    defaultValue={editingDocente?.cognome} 
+                    required 
+                  />
+                </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Titolo Professionale</label>
-            <input 
-              name="titolo_professionale" 
-              defaultValue={editingDocente?.titolo_professionale} 
-              className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm px-3 py-2" 
-            />
-          </div>
+                <Input 
+                  label="Email *" 
+                  type="email" 
+                  name="email" 
+                  defaultValue={editingDocente?.email} 
+                  required 
+                />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Specializzazione</label>
-            <input 
-              name="specializzazione" 
-              defaultValue={editingDocente?.specializzazione} 
-              className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm px-3 py-2" 
-            />
-          </div>
+                <Input 
+                  label="Titolo Professionale" 
+                  name="titolo_professionale" 
+                  defaultValue={editingDocente?.titolo_professionale} 
+                />
 
-          <div className="flex items-center gap-2 pt-2">
-            <input 
-              type="checkbox" 
-              id="attivo" 
-              name="attivo" 
-              defaultChecked={editingDocente ? editingDocente.attivo == 1 : true} 
-              className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="attivo" className="text-sm text-gray-700 select-none cursor-pointer">
-              Docente Attivo
-            </label>
-          </div>
+                <Input 
+                  label="Specializzazione" 
+                  name="specializzazione" 
+                  defaultValue={editingDocente?.specializzazione} 
+                />
 
-          <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-            <Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button">
-              Annulla
-            </Button>
-            <Button type="submit">
-              Salva
-            </Button>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mt-2">
+                  <Checkbox 
+                    id="attivo"
+                    name="attivo"
+                    label="Docente Attivo"
+                    defaultChecked={editingDocente ? editingDocente.attivo == 1 : true} 
+                  />
+                </div>
+              </div>
+
+              <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+                <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
+                  Annulla
+                </Button>
+                <Button type="submit">
+                  {editingDocente ? 'Aggiorna' : 'Crea'}
+                </Button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
     </div>
   )
 }

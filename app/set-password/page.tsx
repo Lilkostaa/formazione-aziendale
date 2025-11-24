@@ -2,7 +2,11 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Lock, CheckCircle, AlertCircle } from 'lucide-react'
+import { CheckCircle } from 'lucide-react'
+// Componenti UI
+import { Input } from '@/app/components/ui/Input'
+import { Button } from '@/app/components/Button'
+import { Alert } from '@/app/components/ui/Alert'
 
 function SetPasswordForm() {
   const searchParams = useSearchParams()
@@ -14,9 +18,40 @@ function SetPasswordForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
+  // --- FUNZIONE DI VALIDAZIONE ---
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 8) {
+      return "La password deve essere di almeno 8 caratteri."
+    }
+    if (!/[A-Z]/.test(pwd)) {
+      return "La password deve contenere almeno una lettera Maiuscola."
+    }
+    if (!/[a-z]/.test(pwd)) {
+      return "La password deve contenere almeno una lettera minuscola."
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return "La password deve contenere almeno un Numero."
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) {
+      return "La password deve contenere almeno un carattere speciale (es. ! @ # $)."
+    }
+    return null // Nessun errore
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setStatus('idle')
+    setMessage('')
+
+    // 1. Controllo validità password forte
+    const passwordError = validatePassword(password)
+    if (passwordError) {
+      setStatus('error')
+      setMessage(passwordError)
+      return
+    }
     
+    // 2. Controllo corrispondenza
     if (password !== confirm) {
       setStatus('error')
       setMessage('Le password non coincidono')
@@ -43,7 +78,7 @@ function SetPasswordForm() {
       if (!res.ok) throw new Error(data.error || 'Errore generico')
 
       setStatus('success')
-      setTimeout(() => router.push('/login'), 3000) // Redirect al login dopo 3 sec
+      setTimeout(() => router.push('/login'), 3000)
     } catch (err: any) {
       setStatus('error')
       setMessage(err.message)
@@ -52,7 +87,7 @@ function SetPasswordForm() {
 
   if (status === 'success') {
     return (
-      <div className="text-center">
+      <div className="text-center animate-fade-in">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
           <CheckCircle className="w-8 h-8 text-green-600" />
         </div>
@@ -72,51 +107,40 @@ function SetPasswordForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nuova Password</label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="password"
-              required
-              minLength={8}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-        </div>
+        <Input
+          label="Nuova Password"
+          type="password"
+          required
+          // Rimuovi minLength HTML per lasciare gestire l'errore alla nostra funzione custom
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          // Mostra un piccolo suggerimento sotto l'input
+          helperText="Min. 8 caratteri, 1 Maiuscola, 1 Numero, 1 Speciale"
+        />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Conferma Password</label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="password"
-              required
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              placeholder="••••••••"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </div>
-        </div>
+        <Input
+          label="Conferma Password"
+          type="password"
+          required
+          placeholder="••••••••"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+        />
 
         {status === 'error' && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-            <AlertCircle className="h-5 w-5" />
+          <Alert variant="danger" title="Attenzione">
             {message}
-          </div>
+          </Alert>
         )}
 
-        <button
+        <Button
           type="submit"
-          disabled={status === 'loading'}
-          className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          isLoading={status === 'loading'}
+          className="w-full"
         >
-          {status === 'loading' ? 'Salvataggio...' : 'Imposta Password'}
-        </button>
+          Imposta Password
+        </Button>
       </form>
     </>
   )
@@ -126,7 +150,7 @@ export default function Page() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <Suspense fallback={<div>Caricamento...</div>}>
+        <Suspense fallback={<div className="text-center text-gray-500">Caricamento...</div>}>
           <SetPasswordForm />
         </Suspense>
       </div>

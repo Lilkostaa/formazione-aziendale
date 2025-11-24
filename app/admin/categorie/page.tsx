@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Pencil, Trash2, Search, Filter } from 'lucide-react'
+// Componenti UI
+import { Button } from '@/app/components/Button'
+import { Input } from '@/app/components/ui/Input'
+import { Checkbox } from '@/app/components/ui/Checkbox'
+import { Badge } from '@/app/components/Badge'
 
 interface Categoria {
   id: number
@@ -60,9 +65,7 @@ export default function CategoriePage() {
   // Logica Filtri Combinati
   const filteredCategorie = categorie.filter(cat => {
     const matchesSearch = cat.nome.toLowerCase().includes(searchTerm.toLowerCase())
-    // Se il filtro attivo è ON, mostra solo attivi. Altrimenti mostra tutti.
     const matchesAttivo = filterAttivo ? cat.attivo == 1 : true
-    // Se il filtro senza corsi è ON, mostra solo n_corsi == 0. Altrimenti mostra tutti.
     const matchesSenzaCorsi = filterSenzaCorsi ? cat.n_corsi == 0 : true
 
     return matchesSearch && matchesAttivo && matchesSenzaCorsi
@@ -76,12 +79,12 @@ export default function CategoriePage() {
           <h1 className="text-2xl font-bold text-gray-900">Categorie</h1>
           <p className="text-gray-500">Gestione tipologie corsi</p>
         </div>
-        <button
+        <Button
           onClick={() => { setEditingCat(null); setIsModalOpen(true) }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          icon={<Plus size={20} />}
         >
-          <Plus size={20} /> Nuova Categoria
-        </button>
+          Nuova Categoria
+        </Button>
       </div>
 
       {/* Card Principale */}
@@ -90,44 +93,35 @@ export default function CategoriePage() {
         {/* Toolbar Filtri */}
         <div className="p-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row gap-4 justify-between items-center">
           
-          {/* Ricerca */}
+          {/* Ricerca con icona sovrapposta */}
           <div className="relative w-full md:max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input 
-              type="text" 
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 z-10" />
+            <Input 
               placeholder="Cerca categoria..." 
-              className="pl-10 w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="pl-10 bg-white"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
           {/* Toggle Filters */}
-          <div className="flex items-center gap-4 text-sm text-gray-700">
-            <div className="flex items-center gap-2">
-              <Filter size={16} className="text-gray-400" />
+          <div className="flex flex-wrap items-center gap-4 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-gray-500">
+              <Filter size={16} />
               <span className="font-medium">Filtri:</span>
             </div>
             
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input 
-                type="checkbox" 
-                checked={filterAttivo}
-                onChange={(e) => setFilterAttivo(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              Solo Attivi
-            </label>
+            <Checkbox 
+              label="Solo Attivi"
+              checked={filterAttivo}
+              onChange={(e) => setFilterAttivo(e.target.checked)}
+            />
 
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input 
-                type="checkbox" 
-                checked={filterSenzaCorsi}
-                onChange={(e) => setFilterSenzaCorsi(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              Senza Corsi
-            </label>
+            <Checkbox 
+              label="Senza Corsi"
+              checked={filterSenzaCorsi}
+              onChange={(e) => setFilterSenzaCorsi(e.target.checked)}
+            />
           </div>
         </div>
 
@@ -152,37 +146,37 @@ export default function CategoriePage() {
                   <tr key={cat.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-gray-900">{cat.nome}</td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center justify-center min-w-8 px-2 py-1 rounded-full text-xs font-medium ${cat.n_corsi > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-500'}`}>
+                      <Badge variant={cat.n_corsi > 0 ? 'blue' : 'neutral'}>
                         {cat.n_corsi}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      {cat.attivo == 1 ? (
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full border border-green-200">
-                          Attivo
-                        </span>
-                      ) : (
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full border border-gray-200">
-                          Disattivo
-                        </span>
-                      )}
+                      <Badge variant={cat.attivo == 1 ? 'success' : 'neutral'}>
+                        {cat.attivo == 1 ? 'Attivo' : 'Disattivo'}
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-right space-x-2">
-                      <button 
-                        onClick={() => { setEditingCat(cat); setIsModalOpen(true) }}
-                        className="p-1 text-gray-400 hover:text-blue-600 transition-colors rounded hover:bg-blue-50"
-                        title="Modifica"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(cat.id)}
-                        className={`p-1 transition-colors rounded hover:bg-red-50 ${cat.n_corsi > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-400 hover:text-red-600'}`}
-                        title={cat.n_corsi > 0 ? "Impossibile eliminare (corsi associati)" : "Elimina"}
-                        disabled={cat.n_corsi > 0}
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => { setEditingCat(cat); setIsModalOpen(true) }}
+                          title="Modifica"
+                        >
+                          <Pencil size={18} className="text-gray-500" />
+                        </Button>
+                        
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleDelete(cat.id)}
+                          disabled={cat.n_corsi > 0}
+                          title={cat.n_corsi > 0 ? "Impossibile eliminare (corsi associati)" : "Elimina"}
+                          className="hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Trash2 size={18} className={cat.n_corsi > 0 ? "text-gray-300" : "text-gray-500"} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -228,37 +222,32 @@ export default function CategoriePage() {
               }
             }}>
               <div className="p-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome Categoria *</label>
-                  <input 
-                    name="nome" 
-                    defaultValue={editingCat?.nome} 
-                    required 
-                    autoFocus
-                    className="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm" 
-                    placeholder="Es. Sicurezza, Marketing..."
-                  />
-                </div>
+                <Input 
+                  label="Nome Categoria" 
+                  name="nome" 
+                  defaultValue={editingCat?.nome} 
+                  required 
+                  autoFocus
+                  placeholder="Es. Sicurezza, Marketing..."
+                />
 
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <input 
-                    type="checkbox" 
-                    id="attivo" 
-                    name="attivo" 
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <Checkbox 
+                    id="attivo"
+                    name="attivo"
+                    label="Categoria Attiva"
                     defaultChecked={editingCat ? editingCat.attivo == 1 : true} 
-                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="attivo" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
-                    Categoria Attiva
-                  </label>
                 </div>
               </div>
 
               <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Annulla</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
+                  Annulla
+                </Button>
+                <Button type="submit">
                   {editingCat ? 'Aggiorna' : 'Crea'}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
