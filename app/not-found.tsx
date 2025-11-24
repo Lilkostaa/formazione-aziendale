@@ -20,7 +20,7 @@ export default function NotFound() {
         
         <Link
           href="/"
-          className="inline-flex items-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-base focus-ring"
+          className="inline-flex items-center px-6 py-3 bg-primary-600 text-black font-medium rounded-lg hover:bg-primary-700 transition-base focus-ring border-2 border-transparent hover:border-primary-700"
         >
           Torna alla Dashboard
         </Link>
