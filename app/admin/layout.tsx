@@ -23,7 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex h-screen w-full overflow-hidden bg-gray-50 font-sans">
       
       {/* SIDEBAR BLU */}
-      <aside className="w-64 bg-[#062485] text-white flex flex-col flex-shrink-0 z-20 shadow-xl">
+      <aside className="w-64 bg-[#062485] text-white flex flex-col shrink-0 z-20 shadow-xl">
         
         {/* Logo (Bianco su Blu) */}
         <div className="p-6 border-b border-blue-800 flex items-center gap-2">

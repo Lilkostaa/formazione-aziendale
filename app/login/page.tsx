@@ -92,7 +92,7 @@ export default function Page() {
 
           <div className="flex items-center justify-end">
             <div className="text-sm">
-              <Link href="#" className="font-medium text-blue-500 hover:text-blue-400 transition-colors">
+              <Link href="/reset-password" className="font-medium text-blue-500 hover:text-blue-400 transition-colors">
                 Password dimenticata?
               </Link>
             </div>
